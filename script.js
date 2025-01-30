@@ -188,7 +188,7 @@ function BuilderFeeApproval() {
           align-items: center;
         }
         
-        .approve-btn::after {
+        .approve-btn::before {
           content: "👀"; /* Ape eyes emoji */
           font-size: 2rem;
           position: absolute;
