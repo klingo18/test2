@@ -173,6 +173,8 @@ function BuilderFeeApproval() {
         }
 
         .approve-btn {
+          position: relative;
+          overflow: hidden;
           width: 100%;
           background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
           color: white;
@@ -185,11 +187,27 @@ function BuilderFeeApproval() {
           flex-direction: column;
           align-items: center;
         }
-
+        
+        .approve-btn::after {
+          content: "👀"; /* Ape eyes emoji */
+          font-size: 2rem;
+          position: absolute;
+          top: -30px; /* Hide above button */
+          left: 50%;
+          transform: translateX(-50%);
+          opacity: 0;
+          transition: top 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .approve-btn:hover::after {
+          top: -10px; /* Moves into view */
+          opacity: 1;
+        }
+        
         .approve-btn:hover:not(:disabled) {
           transform: scale(1.03);
-          box-shadow: 0 5px 15px rgba(37,117,252,0.4);
-        }
+          box-shadow: 
+
 
         .approve-btn:disabled {
           background: #e0e0e0;
