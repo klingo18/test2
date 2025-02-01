@@ -1,8 +1,3 @@
-import React from 'https://esm.sh/react@18';
-import ReactDOM from 'https://esm.sh/react-dom@18';
-import * as hl from "https://esm.sh/@nktkas/hyperliquid";
-import { createWalletClient, custom } from "https://esm.sh/viem";
-
 function BuilderFeeApproval() {
   const [walletStatus, setWalletStatus] = React.useState('Not Connected');
   const [walletAddress, setWalletAddress] = React.useState('');
