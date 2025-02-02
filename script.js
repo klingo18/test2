@@ -9,58 +9,10 @@ function BuilderFeeApproval() {
   const [responseMessage, setResponseMessage] = React.useState('');
   const [responseType, setResponseType] = React.useState('');
   const [walletClient, setWalletClient] = React.useState(null);
-  const [chainId, setChainId] = React.useState(null);
 
   React.useEffect(() => {
     connectWallet();
-    checkChain();
   }, []);
-
-  const checkChain = async () => {
-    try {
-      const chain = await window.ethereum.request({
-        method: 'eth_chainId'
-      });
-      setChainId(chain);
-      
-      window.ethereum.on('chainChanged', (newChain) => {
-        setChainId(newChain);
-      });
-    } catch (error) {
-      console.error('Failed to get chain:', error);
-    }
-  };
-
-  const handleChainSwitch = async () => {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0xa4b1' }] // Arbitrum One chainId
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: '0xa4b1',
-              chainName: 'Arbitrum One',
-              nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18
-              },
-              rpcUrls: ['https://arb1.arbitrum.io/rpc'],
-              blockExplorerUrls: ['https://arbiscan.io/']
-            }]
-          });
-        } catch (addError) {
-          console.error('Failed to add network:', addError);
-        }
-      }
-      console.error('Failed to switch network:', switchError);
-    }
-  };
 
   async function connectWallet() {
     try {
@@ -69,8 +21,8 @@ function BuilderFeeApproval() {
         return;
       }
 
-      const [account] = await window.ethereum.request({
-        method: "eth_requestAccounts"
+      const [account] = await window.ethereum.request({ 
+        method: "eth_requestAccounts" 
       });
 
       const client = createWalletClient({
@@ -84,15 +36,6 @@ function BuilderFeeApproval() {
       setResponseMessage('');
       setResponseType('');
 
-      window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        } else {
-          setWalletStatus('Not Connected');
-          setWalletAddress('');
-        }
-      });
-
     } catch (error) {
       setWalletStatus('Connection Failed');
       setResponseMessage(error.message);
@@ -104,9 +47,9 @@ function BuilderFeeApproval() {
     try {
       const transport = new hl.HttpTransport();
 
-      const hlClient = new hl.WalletClient({
-        transport,
-        wallet: walletClient
+      const hlClient = new hl.WalletClient({ 
+        transport, 
+        wallet: walletClient 
       });
 
       const builderAddress = "0x13e46cCd194ca86212236543d2e7376b00bafa42";
@@ -117,7 +60,7 @@ function BuilderFeeApproval() {
         maxFeeRate: maxFeeRate
       });
 
-      setResponseMessage('Builder Fee Approved Successfully! Welcome to the $TRUST fam 🦍');
+      setResponseMessage('Builder Fee Approved Successfully! 🎉');
       setResponseType('success');
       console.log("Builder fee approved:", response);
 
@@ -129,96 +72,175 @@ function BuilderFeeApproval() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header with Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-yellow-400 mb-2">
-            $TRUST
-          </h1>
-          <p className="text-gray-400">by DegenApeTrader (DAT)</p>
+    <div className="container">
+      <div className="header">
+        <h1>Hyperliquid Builder Fee Approval</h1>
+        <p>Approve a builder to optimize your trading experience</p>
+      </div>
+
+      <div className={`status-box ${walletStatus === 'Connected' ? 'success' : 'warning'}`}>
+        <div className="wallet-icon">
+          {walletStatus === 'Connected' ? '🟢' : '🔴'}
         </div>
-
-        {/* Main Card */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-2xl border border-gray-700">
-          {/* Network Status */}
-          {chainId !== '0xa4b1' && (
-            <div className="mb-4 p-3 bg-yellow-900/30 border border-yellow-600/50 rounded-lg">
-              <div className="flex items-center justify-center text-yellow-500">
-                <span className="mr-2">🦍</span>
-                <span className="ml-2">Please switch to Arbitrum</span>
-                <button 
-                  onClick={handleChainSwitch}
-                  className="ml-2 text-yellow-400 hover:text-yellow-300 underline"
-                >
-                  Switch Network
-                </button>
-              </div>
-            </div>
+        <div className="wallet-details">
+          <p>Wallet Status: {walletStatus}</p>
+          {walletAddress && (
+            <p className="truncate-address">
+              Address: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </p>
           )}
-
-          {/* Wallet Status */}
-          <div className="flex items-center justify-center p-4 bg-gray-900/50 rounded-lg mb-6">
-            <div className="text-center">
-              <p className="text-gray-300 text-lg font-medium flex items-center justify-center">
-                <span className={`h-2 w-2 rounded-full ${walletStatus === 'Connected' ? 'bg-green-500 animate-pulse' : 'bg-red-500'} mr-2`}></span>
-                {walletStatus}
-              </p>
-              {walletAddress && (
-                <p className="text-gray-500 text-sm mt-1">
-                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Approval Button */}
-          <button
-            onClick={approveBuilderFee}
-            disabled={walletStatus !== 'Connected' || chainId !== '0xa4b1'}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 
-                     disabled:bg-gray-700
-                     text-black font-bold py-4 px-6 rounded-lg
-                     transition-all duration-200 ease-in-out
-                     disabled:cursor-not-allowed disabled:text-gray-500
-                     flex items-center justify-center gap-2"
-          >
-            <span>Approve Builder Fee</span>
-            <span className="text-xs opacity-75">(0.1% Max)</span>
-          </button>
-
-          {/* Response Messages */}
-          {responseMessage && (
-            <div className={`mt-4 p-4 rounded-lg transition-all duration-300 text-center
-              ${responseType === 'success' 
-                ? 'bg-green-900/30 border border-green-700/50 text-green-400' 
-                : 'bg-red-900/30 border border-red-700/50 text-red-400'}`}>
-              <div className="flex items-center justify-center gap-2">
-                {responseType === 'success' ? '🦍' : '⚠️'}
-                <p className="text-sm">{responseMessage}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Footer Links */}
-          <div className="mt-6 pt-4 border-t border-gray-700">
-            <div className="flex justify-between text-sm text-gray-500">
-              <a href="https://x.com/trustme_bros" target="_blank" className="hover:text-yellow-400 flex items-center gap-1">
-                Twitter <span className="text-xs">↗️</span>
-              </a>
-              <a href="https://trustmebros.fun/" target="_blank" className="hover:text-yellow-400 flex items-center gap-1">
-                Website <span className="text-xs">↗️</span>
-              </a>
-              <a href="https://t.me/trustmebrosfun" target="_blank" className="hover:text-yellow-400 flex items-center gap-1">
-                Telegram <span className="text-xs">↗️</span>
-              </a>
-            </div>
-          </div>
         </div>
       </div>
+      
+      <button 
+        className="approve-btn" 
+        onClick={approveBuilderFee}
+        disabled={walletStatus !== 'Connected'}
+      >
+        <span className="btn-text">Approve Builder Fee</span>
+        <span className="btn-subtext">0.1% Max Fee Rate</span>
+      </button>
+      
+      {responseMessage && (
+        <div 
+          className={`message-box ${responseType === 'success' ? 'success-message' : 'error-message'} animate-slide-in`}
+        >
+          {responseMessage}
+        </div>
+      )}
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        body {
+          background-color: #f0f4f8;
+          font-family: 'Inter', sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+        }
+
+        .container {
+          background-color: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          padding: 30px;
+          width: 100%;
+          max-width: 400px;
+          text-align: center;
+          transition: all 0.3s ease;
+        }
+
+        .container:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .header {
+          margin-bottom: 25px;
+          color: #2c3e50;
+        }
+
+        .header h1 {
+          font-size: 1.5rem;
+          margin-bottom: 10px;
+          font-weight: 600;
+        }
+
+        .header p {
+          color: #7f8c8d;
+          font-size: 0.9rem;
+        }
+
+        .status-box {
+          display: flex;
+          align-items: center;
+          padding: 15px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+          background-color: #f1f5f9;
+        }
+
+        .wallet-icon {
+          font-size: 2rem;
+          margin-right: 15px;
+        }
+
+        .truncate-address {
+          color: #6b7280;
+        }
+
+        .approve-btn {
+          width: 100%;
+          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+          color: white;
+          border: none;
+          padding: 15px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .approve-btn:hover:not(:disabled) {
+          transform: scale(1.03);
+          box-shadow: 0 5px 15px rgba(37,117,252,0.4);
+        }
+
+        .approve-btn:disabled {
+          background: #e0e0e0;
+          cursor: not-allowed;
+        }
+
+        .btn-text {
+          font-weight: 600;
+        }
+
+        .btn-subtext {
+          font-size: 0.7rem;
+          margin-top: 5px;
+          opacity: 0.7;
+        }
+
+        .message-box {
+          margin-top: 20px;
+          padding: 15px;
+          border-radius: 10px;
+          font-size: 0.9rem;
+        }
+
+        .success-message {
+          background-color: #d1fae5;
+          color: #047857;
+        }
+
+        .error-message {
+          background-color: #fee2e2;
+          color: #b91c1c;
+        }
+
+        .animate-slide-in {
+          animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+          from { 
+            opacity: 0; 
+            transform: translateY(-20px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(BuilderFeeApproval, null));
+root.render(<BuilderFeeApproval />);
