@@ -1,3 +1,6 @@
+import * as hl from 'https://esm.sh/@nktkas/hyperliquid';
+import { createWalletClient, custom } from 'https://esm.sh/viem';
+
 const { useState, useEffect } = React;
 
 function BuilderFeeApproval() {
