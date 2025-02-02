@@ -1,6 +1,3 @@
-
-<script src="https://esm.sh/@nktkas/hyperliquid"></script>
-<script src="https://esm.sh/viem"></script>
 const { useState, useEffect } = React;
 
 function BuilderFeeApproval() {
@@ -10,6 +7,7 @@ function BuilderFeeApproval() {
   const [responseType, setResponseType] = useState('');
   const [chainId, setChainId] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
+  const [walletClient, setWalletClient] = useState(null);
   
   useEffect(() => {
     const checkConnection = async () => {
@@ -92,59 +90,105 @@ function BuilderFeeApproval() {
     }
 
     try {
-      const accounts = await window.ethereum.request({
+      const [account] = await window.ethereum.request({
         method: "eth_requestAccounts"
       });
 
-      if (accounts.length > 0) {
-        setWalletStatus('Connected');
-        setWalletAddress(accounts[0]);
-        const chain = await window.ethereum.request({ method: 'eth_chainId' });
-        setChainId(chain);
-      }
+      const client = viem.createWalletClient({
+        account,
+        transport: viem.custom(window.ethereum)
+      });
+
+      setWalletClient(client);
+      setWalletStatus('Connected');
+      setWalletAddress(account);
+      const chain = await window.ethereum.request({ method: 'eth_chainId' });
+      setChainId(chain);
     } catch (error) {
       setWalletStatus('Connection Failed');
     }
   };
 
   const approveBuilderFee = async () => {
-  if (!window.ethereum || !walletAddress) return;
-  
-  try {
-    setIsApproving(true);
-    setResponseMessage('Initiating approval...');
-    setResponseType('info');
+    if (!window.ethereum || !walletAddress) return;
+    
+    try {
+      setIsApproving(true);
+      setResponseMessage('Initiating approval...');
+      setResponseType('info');
 
-    // Builder address stays the same
-    const builderAddress = "0x13e46cCd194ca86212236543d2e7376b00bafa42";
-    const maxFeeRate = "0.1%";
+      const transport = new hl.HttpTransport();
+      const hlClient = new hl.WalletClient({
+        transport,
+        wallet: walletClient
+      });
 
-    // Format the transaction data
-    const transactionParameters = {
-      from: walletAddress,
-      to: builderAddress,
-      // No need for complex data formatting since this is a simple approval
-      data: '0x'
-    };
+      const builderAddress = "0x13e46cCd194ca86212236543d2e7376b00bafa42";
+      const maxFeeRate = "0.1%";
 
-    const txHash = await window.ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [transactionParameters]
-    });
+      const response = await hlClient.approveBuilderFee({
+        builder: builderAddress,
+        maxFeeRate: maxFeeRate
+      });
 
-    setResponseMessage('Transaction submitted: ' + txHash);
-    setResponseType('success');
+      setResponseMessage('Builder Fee Approved Successfully! Welcome to the $TRUST fam 🦍');
+      setResponseType('success');
+      console.log("Builder fee approved:", response);
 
-  } catch (error) {
-    if (error.code === 4001) {
-      setResponseMessage('Transaction rejected by user');
-    } else {
-      setResponseMessage('Failed to approve: ' + error.message);
+    } catch (error) {
+      setResponseMessage(`Approval Failed: ${error.message}`);
+      setResponseType('error');
+      console.error("Failed to approve builder fee:", error);
+    } finally {
+      setIsApproving(false);
     }
-    setResponseType('error');
-  } finally {
-    setIsApproving(false);
-  }
-};
+  };
+
+  return React.createElement("div", { className: "container" },
+    React.createElement("div", { className: "card" },
+      React.createElement("h1", { className: "title" }, "$TRUST"),
+      React.createElement("p", { className: "subtitle" }, "by DegenApeTrader (DAT)"),
+      
+      chainId !== '0xa4b1' && walletStatus === 'Connected' &&
+        React.createElement("div", { className: "message error" },
+          React.createElement("p", null, "Please switch to Arbitrum"),
+          React.createElement("button", {
+            onClick: handleChainSwitch,
+            className: "switch-network"
+          }, "Switch Network")
+        ),
+
+      React.createElement("div", { className: "status" },
+        React.createElement("span", {
+          className: `status-dot ${walletStatus === 'Connected' ? 'connected' : 'disconnected'}`
+        }),
+        walletStatus
+      ),
+
+      walletAddress &&
+        React.createElement("p", { className: "subtitle" },
+          `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+        ),
+
+      walletStatus !== 'Connected' &&
+        React.createElement("button", {
+          onClick: connectWallet,
+          className: "button button-primary"
+        }, "Connect Wallet"),
+
+      React.createElement("button", {
+        onClick: approveBuilderFee,
+        disabled: walletStatus !== 'Connected' || chainId !== '0xa4b1' || isApproving,
+        className: "button button-secondary"
+      }, isApproving ? "Approving..." : "Approve Builder Fee (0.1% Max)"),
+
+      responseMessage &&
+        React.createElement("div", {
+          className: `message ${responseType}`
+        }, responseMessage)
+    )
+  );
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(BuilderFeeApproval));
