@@ -1,12 +1,47 @@
-function BuilderFeeApproval() {
-  const [walletStatus, setWalletStatus] = React.useState('Not Connected');
-  const [walletAddress, setWalletAddress] = React.useState('');
-  const [responseMessage, setResponseMessage] = React.useState('');
-  const [responseType, setResponseType] = React.useState('');
-  const [walletClient, setWalletClient] = React.useState(null);
-  const [chainId, setChainId] = React.useState(null);
+// index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="$TRUST Builder Fee Approval by DegenApeTrader">
+    <title>$TRUST - Builder Fee Approval</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viem/1.19.9/viem.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@nktkas/hyperliquid@0.1.0/dist/index.min.js"></script>
+    <!-- Your application code -->
+    <script src="app.js" type="module"></script>
+</body>
+</html>
 
-  React.useEffect(() => {
+// app.js
+const { useState, useEffect } = React;
+const { createRoot } = ReactDOM;
+const { createWalletClient, custom } = viem;
+const hl = window.hyperliquid;
+
+function BuilderFeeApproval() {
+  const [walletStatus, setWalletStatus] = useState('Not Connected');
+  const [walletAddress, setWalletAddress] = useState('');
+  const [responseMessage, setResponseMessage] = useState('');
+  const [responseType, setResponseType] = useState('');
+  const [walletClient, setWalletClient] = useState(null);
+  const [chainId, setChainId] = useState(null);
+
+  useEffect(() => {
     connectWallet();
     checkChain();
   }, []);
@@ -30,7 +65,7 @@ function BuilderFeeApproval() {
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0xa4b1' }] // Arbitrum One chainId
+        params: [{ chainId: '0xa4b1' }]
       });
     } catch (switchError) {
       if (switchError.code === 4902) {
@@ -126,7 +161,6 @@ function BuilderFeeApproval() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header with Logo */}
         <div className="text-center mb-8">
           <h1 className="text-6xl font-bold text-yellow-400 mb-2">
             $TRUST
@@ -134,9 +168,7 @@ function BuilderFeeApproval() {
           <p className="text-gray-400">by DegenApeTrader (DAT)</p>
         </div>
 
-        {/* Main Card */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-2xl border border-gray-700">
-          {/* Network Status */}
           {chainId !== '0xa4b1' && (
             <div className="mb-4 p-3 bg-yellow-900/30 border border-yellow-600/50 rounded-lg">
               <div className="flex items-center justify-center text-yellow-500">
@@ -152,7 +184,6 @@ function BuilderFeeApproval() {
             </div>
           )}
 
-          {/* Wallet Status */}
           <div className="flex items-center justify-center p-4 bg-gray-900/50 rounded-lg mb-6">
             <div className="text-center">
               <p className="text-gray-300 text-lg font-medium flex items-center justify-center">
@@ -167,7 +198,6 @@ function BuilderFeeApproval() {
             </div>
           </div>
 
-          {/* Approval Button */}
           <button
             onClick={approveBuilderFee}
             disabled={walletStatus !== 'Connected' || chainId !== '0xa4b1'}
@@ -182,7 +212,6 @@ function BuilderFeeApproval() {
             <span className="text-xs opacity-75">(0.1% Max)</span>
           </button>
 
-          {/* Response Messages */}
           {responseMessage && (
             <div className={`mt-4 p-4 rounded-lg transition-all duration-300 text-center
               ${responseType === 'success' 
@@ -195,7 +224,6 @@ function BuilderFeeApproval() {
             </div>
           )}
 
-          {/* Footer Links */}
           <div className="mt-6 pt-4 border-t border-gray-700">
             <div className="flex justify-between text-sm text-gray-500">
               <a href="https://x.com/trustme_bros" target="_blank" className="hover:text-yellow-400 flex items-center gap-1">
@@ -215,5 +243,5 @@ function BuilderFeeApproval() {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(BuilderFeeApproval, null));
+const root = createRoot(document.getElementById('root'));
+root.render(React.createElement(BuilderFeeApproval));
