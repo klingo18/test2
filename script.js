@@ -112,17 +112,16 @@ function BuilderFeeApproval() {
     setResponseMessage('Initiating approval...');
     setResponseType('info');
 
-    const tokenAddress = '0x13e46cCd194ca86212236543d2e7376b00bafa42'; // This should be your token contract
-    const builderAddress = '0x13e46cCd194ca86212236543d2e7376b00bafa42'; // Builder to approve
+    // Builder address stays the same
+    const builderAddress = "0x13e46cCd194ca86212236543d2e7376b00bafa42";
+    const maxFeeRate = "0.1%";
 
-    // Format the builder address to 32 bytes
-    const paddedAddress = builderAddress.slice(2).padStart(64, '0');
-    const paddedAmount = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-
+    // Format the transaction data
     const transactionParameters = {
       from: walletAddress,
-      to: tokenAddress, // We call approve on the token contract
-      data: '0x095ea7b3' + paddedAddress + paddedAmount, // approve(address,uint256)
+      to: builderAddress,
+      // No need for complex data formatting since this is a simple approval
+      data: '0x'
     };
 
     const txHash = await window.ethereum.request({
@@ -134,12 +133,15 @@ function BuilderFeeApproval() {
     setResponseType('success');
 
   } catch (error) {
-    setResponseMessage(error.message);
+    if (error.code === 4001) {
+      setResponseMessage('Transaction rejected by user');
+    } else {
+      setResponseMessage('Failed to approve: ' + error.message);
+    }
     setResponseType('error');
   } finally {
     setIsApproving(false);
   }
 };
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(BuilderFeeApproval));
