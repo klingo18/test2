@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,10 +5,6 @@
     <meta name="description" content="$TRUST Builder Fee Approval by DegenApeTrader">
     <title>$TRUST - Builder Fee Approval</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@nktkas/hyperliquid/dist/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/viem"></script>
     <style>
         body {
             margin: 0;
@@ -20,6 +15,12 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="text/javascript" src="./script.js"></script>
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viem/1.19.9/viem.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@nktkas/hyperliquid@0.1.0/dist/index.min.js"></script>
+    <!-- Your application code -->
+    <script src="app.js" type="module"></script>
 </body>
 </html>
