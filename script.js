@@ -6,19 +6,42 @@ function BuilderFeeApproval() {
  const [responseMessage, setResponseMessage] = useState('');
  const [responseType, setResponseType] = useState('');
  const [chainId, setChainId] = useState(null);
- 
+
  useEffect(() => {
-   if (window.ethereum) {
-     // Initial chain check
-     window.ethereum.request({ method: 'eth_chainId' })
-       .then(setChainId)
-       .catch(console.error);
+   const checkConnection = async () => {
+     if (!window.ethereum) return;
      
-     // Handle chain changes
-     window.ethereum.on('chainChanged', (newChain) => {
-       setChainId(newChain);
-       window.location.reload();
-     });
+     try {
+       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+       if (accounts.length) {
+         setWalletAddress(accounts[0]);
+         setWalletStatus('Connected');
+         const chain = await window.ethereum.request({ method: 'eth_chainId' });
+         setChainId(chain);
+       }
+     } catch (err) {
+       console.error(err);
+     }
+   };
+
+   checkConnection();
+   
+   if (window.ethereum) {
+     const handleChainChanged = () => window.location.reload();
+     const handleAccountsChanged = (accounts) => {
+       if (accounts.length === 0) {
+         setWalletStatus('Not Connected');
+         setWalletAddress('');
+       }
+     };
+
+     window.ethereum.on('chainChanged', handleChainChanged);
+     window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+     return () => {
+       window.ethereum.removeListener('chainChanged', handleChainChanged);
+       window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+     };
    }
  }, []);
 
@@ -41,10 +64,8 @@ function BuilderFeeApproval() {
              blockExplorerUrls: ['https://arbiscan.io']
            }]
          });
-       } catch (error) {
-         console.error(error);
-         setResponseMessage('Failed to add Arbitrum network');
-         setResponseType('error');
+       } catch (addError) {
+         console.error('Failed to add Arbitrum network');
        }
      }
    }
@@ -57,60 +78,66 @@ function BuilderFeeApproval() {
    }
 
    try {
-     const [account] = await window.ethereum.request({
+     const accounts = await window.ethereum.request({
        method: "eth_requestAccounts"
      });
 
-     setWalletStatus('Connected');
-     setWalletAddress(account);
+     if (accounts.length > 0) {
+       setWalletStatus('Connected');
+       setWalletAddress(accounts[0]);
+       const chain = await window.ethereum.request({ method: 'eth_chainId' });
+       setChainId(chain);
+     }
    } catch (error) {
      setWalletStatus('Connection Failed');
+     console.error(error);
    }
  };
 
  const approveBuilderFee = async () => {
+   if (!window.ethereum || !walletAddress) return;
+   
    try {
      const builderAddress = "0x13e46cCd194ca86212236543d2e7376b00bafa42";
      setResponseMessage('Builder Fee Approved Successfully! Welcome to the $TRUST fam 🦍');
      setResponseType('success');
    } catch (error) {
-     setResponseMessage('Approval Failed: ' + error.message);
+     setResponseMessage('Approval Failed');
      setResponseType('error');
    }
  };
 
- return React.createElement("div", { className: "container" }, 
-   React.createElement("div", null,
-     React.createElement("h1", { className: "title" }, "$TRUST"),
-     React.createElement("p", { className: "subtitle" }, "by DegenApeTrader (DAT)")
-   ),
+ return React.createElement("div", { className: "container" },
    React.createElement("div", { className: "card" },
-     chainId !== '0xa4b1' && walletStatus === 'Connected' ? 
+     React.createElement("h1", { className: "title" }, "$TRUST"),
+     React.createElement("p", { className: "subtitle" }, "by DegenApeTrader (DAT)"),
+     
+     chainId !== '0xa4b1' && walletStatus === 'Connected' &&
        React.createElement("div", { className: "message error" },
          React.createElement("p", null, "Please switch to Arbitrum"),
          React.createElement("button", {
            onClick: handleChainSwitch,
-           className: "button button-primary"
+           className: "switch-network"
          }, "Switch Network")
-       ) : null,
+       ),
 
      React.createElement("div", { className: "status" },
-       React.createElement("span", { 
+       React.createElement("span", {
          className: `status-dot ${walletStatus === 'Connected' ? 'connected' : 'disconnected'}`
        }),
        walletStatus
      ),
 
-     walletAddress ? 
+     walletAddress &&
        React.createElement("p", { className: "subtitle" },
          `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-       ) : null,
+       ),
 
-     walletStatus !== 'Connected' ?
+     walletStatus !== 'Connected' &&
        React.createElement("button", {
          onClick: connectWallet,
          className: "button button-primary"
-       }, "Connect Wallet") : null,
+       }, "Connect Wallet"),
 
      React.createElement("button", {
        onClick: approveBuilderFee,
@@ -118,13 +145,15 @@ function BuilderFeeApproval() {
        className: "button button-secondary"
      }, "Approve Builder Fee (0.1% Max)"),
 
-     responseMessage ?
+     responseMessage &&
        React.createElement("div", {
          className: `message ${responseType === 'success' ? 'success' : 'error'}`
-       }, responseMessage) : null
+       }, responseMessage)
    )
  );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(BuilderFeeApproval));
+// Initialize app
+ReactDOM.createRoot(document.getElementById('root')).render(
+ React.createElement(BuilderFeeApproval)
+);
