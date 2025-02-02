@@ -1,6 +1,5 @@
 import React from 'https://unpkg.com/react@18/umd/react.production.min.js';
 import ReactDOM from 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
-
 import * as hl from 'https://unpkg.com/@nktkas/hyperliquid@latest';
 import { createWalletClient, custom } from 'https://unpkg.com/viem@latest';
 
