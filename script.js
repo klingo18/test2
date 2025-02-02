@@ -1,7 +1,11 @@
+// Get dependencies from window object
 const { useState, useEffect } = React;
 const { createRoot } = ReactDOM;
-const { createWalletClient, custom } = viem;
+// viem is loaded as 'window.viem'
+const { createWalletClient, custom } = window.viem;
 const hl = window.hyperliquid;
+
+
 
 function BuilderFeeApproval() {
     const [walletStatus, setWalletStatus] = useState('Not Connected');
@@ -213,5 +217,9 @@ function BuilderFeeApproval() {
     );
 }
 
-const root = createRoot(document.getElementById('root'));
-root.render(<BuilderFeeApproval />);
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+    const root = createRoot(document.getElementById('root'));
+    root.render(<BuilderFeeApproval />);
+});
