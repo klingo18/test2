@@ -1,3 +1,6 @@
+
+<script src="https://esm.sh/@nktkas/hyperliquid"></script>
+<script src="https://esm.sh/viem"></script>
 const { useState, useEffect } = React;
 
 function BuilderFeeApproval() {
@@ -7,7 +10,7 @@ function BuilderFeeApproval() {
   const [responseType, setResponseType] = useState('');
   const [chainId, setChainId] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
-
+  
   useEffect(() => {
     const checkConnection = async () => {
       if (!window.ethereum) return;
