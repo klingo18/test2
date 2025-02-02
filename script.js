@@ -1,5 +1,5 @@
-import * as hl from 'https://esm.sh/@nktkas/hyperliquid';
-import { createWalletClient, custom } from 'https://esm.sh/viem';
+import * as hl from "https://esm.sh/@nktkas/hyperliquid";
+import { createWalletClient, custom } from "https://esm.sh/viem";
 
 const { useState, useEffect } = React;
 
@@ -11,53 +11,28 @@ function BuilderFeeApproval() {
   const [chainId, setChainId] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
   const [walletClient, setWalletClient] = useState(null);
-  
+
   useEffect(() => {
-    const checkConnection = async () => {
-      if (!window.ethereum) return;
-      
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length) {
-          setWalletAddress(accounts[0]);
-          setWalletStatus('Connected');
-          const chain = await window.ethereum.request({ method: 'eth_chainId' });
-          setChainId(chain);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    checkConnection();
-    
-    if (window.ethereum) {
-      const handleChainChanged = (chain) => {
-        setChainId(chain);
-        window.location.reload();
-      };
-      
-      const handleAccountsChanged = (accounts) => {
-        if (accounts.length === 0) {
-          setWalletStatus('Not Connected');
-          setWalletAddress('');
-        } else {
-          setWalletAddress(accounts[0]);
-          setWalletStatus('Connected');
-        }
-      };
-
-      window.ethereum.on('chainChanged', handleChainChanged);
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      
-      return () => {
-        if (window.ethereum.removeListener) {
-          window.ethereum.removeListener('chainChanged', handleChainChanged);
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        }
-      };
-    }
+    connectWallet();
+    checkChain();
   }, []);
+
+  const checkChain = async () => {
+    if (!window.ethereum) return;
+    
+    try {
+      const chain = await window.ethereum.request({
+        method: 'eth_chainId'
+      });
+      setChainId(chain);
+      
+      window.ethereum.on('chainChanged', (newChain) => {
+        setChainId(newChain);
+      });
+    } catch (error) {
+      console.error('Failed to get chain:', error);
+    }
+  };
 
   const handleChainSwitch = async () => {
     try {
@@ -97,30 +72,27 @@ function BuilderFeeApproval() {
         method: "eth_requestAccounts"
       });
 
-      const client = viem.createWalletClient({
+      const client = createWalletClient({
         account,
-        transport: viem.custom(window.ethereum)
+        transport: custom(window.ethereum)
       });
 
       setWalletClient(client);
       setWalletStatus('Connected');
       setWalletAddress(account);
-      const chain = await window.ethereum.request({ method: 'eth_chainId' });
-      setChainId(chain);
+      setResponseMessage('');
+      setResponseType('');
+
     } catch (error) {
       setWalletStatus('Connection Failed');
     }
   };
 
   const approveBuilderFee = async () => {
-    if (!window.ethereum || !walletAddress) return;
-    
     try {
       setIsApproving(true);
-      setResponseMessage('Initiating approval...');
-      setResponseType('info');
-
       const transport = new hl.HttpTransport();
+
       const hlClient = new hl.WalletClient({
         transport,
         wallet: walletClient
