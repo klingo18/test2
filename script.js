@@ -1,7 +1,7 @@
-import React from 'https://esm.sh/react@18';
-import ReactDOM from 'https://esm.sh/react-dom@18';
-import * as hl from "https://esm.sh/@nktkas/hyperliquid";
-import { createWalletClient, custom } from "https://esm.sh/viem";
+import React from 'https://unpkg.com/react@18/umd/react.production.min.js';
+import ReactDOM from 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
+import * as hl from 'https://unpkg.com/@nktkas/hyperliquid@latest';
+import { createWalletClient, custom } from 'https://unpkg.com/viem@latest';
 
 function BuilderFeeApproval() {
   const [walletStatus, setWalletStatus] = React.useState('Not Connected');
