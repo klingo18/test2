@@ -1,150 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'self'; 
-                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://esm.sh; 
-                   style-src 'self' 'unsafe-inline';
-                   connect-src 'self' https://arb1.arbitrum.io/rpc">
-    <title>$TRUST - Builder Fee Approval</title>
-    
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: #111827;
-            color: white;
-            font-family: system-ui, sans-serif;
-        }
-        
-        .container {
-            max-width: 28rem;
-            margin: 0 auto;
-            padding: 1rem;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .button {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            margin: 0.5rem 0;
-        }
-        
-        .button-primary {
-            background: #3B82F6;
-            color: white;
-        }
-        
-        .button-secondary {
-            background: #EAB308;
-            color: black;
-        }
-        
-        .button:disabled {
-            background: #374151;
-            color: #6B7280;
-            cursor: not-allowed;
-        }
-        
-        .card {
-            background: #1F2937;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            border: 1px solid #374151;
-        }
-        
-        .title {
-            font-size: 2.25rem;
-            font-weight: bold;
-            color: #EAB308;
-            margin: 0;
-            text-align: center;
-        }
-        
-        .subtitle {
-            color: #9CA3AF;
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-        
-        .status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 1rem 0;
-            font-size: 1rem;
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-        
-        .status-dot.connected { 
-            background: #22C55E;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-dot.disconnected { 
-            background: #EF4444; 
-        }
-        
-        .message {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 0.25rem;
-            text-align: center;
-        }
-        
-        .message.success {
-            background: #064E3B;
-            color: #34D399;
-        }
-        
-        .message.error {
-            background: #7F1D1D;
-            color: #FCA5A5;
-        }
-        
-        .message.info {
-            background: #1E3A8A;
-            color: #93C5FD;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta http-equiv="Content-Security-Policy" 
+         content="default-src 'self' https://esm.sh; 
+                  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://esm.sh https://cdnjs.cloudflare.com; 
+                  style-src 'self' 'unsafe-inline';
+                  connect-src 'self' https://arb1.arbitrum.io/rpc *;">
+   <title>$TRUST - Builder Fee Approval</title>
+   
+   <style>
+       body {
+           margin: 0;
+           min-height: 100vh;
+           background: #111827;
+           color: white;
+           font-family: system-ui, sans-serif;
+       }
+       
+       .container {
+           max-width: 28rem;
+           margin: 0 auto;
+           padding: 1rem;
+           min-height: 100vh;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+       }
+       
+       .button {
+           width: 100%;
+           padding: 0.75rem 1rem;
+           border-radius: 0.5rem;
+           font-weight: bold;
+           cursor: pointer;
+           border: none;
+           margin: 0.5rem 0;
+       }
+       
+       .button-primary {
+           background: #3B82F6;
+           color: white;
+       }
+       
+       .button-secondary {
+           background: #EAB308;
+           color: black;
+       }
+       
+       .button:disabled {
+           background: #374151;
+           color: #6B7280;
+           cursor: not-allowed;
+       }
+       
+       .card {
+           background: #1F2937;
+           border-radius: 0.5rem;
+           padding: 1.5rem;
+           border: 1px solid #374151;
+       }
+       
+       .title {
+           font-size: 2.25rem;
+           font-weight: bold;
+           color: #EAB308;
+           margin: 0;
+           text-align: center;
+       }
+       
+       .subtitle {
+           color: #9CA3AF;
+           margin-top: 0.5rem;
+           text-align: center;
+       }
+       
+       .status {
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           margin: 1rem 0;
+           font-size: 1rem;
+       }
+       
+       .status-dot {
+           width: 8px;
+           height: 8px;
+           border-radius: 50%;
+           margin-right: 0.5rem;
+       }
+       
+       .status-dot.connected { 
+           background: #22C55E;
+           animation: pulse 2s infinite;
+       }
+       
+       .status-dot.disconnected { 
+           background: #EF4444; 
+       }
+       
+       .message {
+           margin-top: 1rem;
+           padding: 1rem;
+           border-radius: 0.25rem;
+           text-align: center;
+       }
+       
+       .message.success {
+           background: #064E3B;
+           color: #34D399;
+       }
+       
+       .message.error {
+           background: #7F1D1D;
+           color: #FCA5A5;
+       }
+       
+       .message.info {
+           background: #1E3A8A;
+           color: #93C5FD;
+       }
+       
+       @keyframes pulse {
+           0% { opacity: 1; }
+           50% { opacity: 0.5; }
+           100% { opacity: 1; }
+       }
 
-        .switch-network {
-            color: #EAB308;
-            background: none;
-            border: none;
-            text-decoration: underline;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-        }
-    </style>
+       .switch-network {
+           color: #EAB308;
+           background: none;
+           border: none;
+           text-decoration: underline;
+           cursor: pointer;
+           padding: 0;
+           margin: 0;
+       }
+   </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@hyperliquid/sdk/dist/hyperliquid.min.js"></script>
-    <script src="https://unpkg.com/viem"></script>
-    <script src="script.js"></script>
+   <div id="root"></div>
+   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+   <script type="module" src="script.js"></script>
 </body>
 </html>
