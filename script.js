@@ -133,32 +133,28 @@ useEffect(() => {
       console.log("Builder fee approved:", response);
 
     } catch (error) {
-        let errorMsg = error.message || 'Operation failed';
-        
-        // Remove version information and clean up error message
-        if (errorMsg.includes('Version:')) {
-            errorMsg = errorMsg.split('Version:')[0].trim();
-        }
-        
-        // Remove redundant "Details: " if present
-        errorMsg = errorMsg.replace('Details: ', '');
-        
-        // Clean up duplicate authorization messages
-        if (errorMsg.includes('has not been authorized by the user')) {
-            errorMsg = 'The requested method and/or account has not been authorized by the user';
-        }
-        
-        // Clean up duplicate user rejection messages
-        if (errorMsg.includes('User rejected') && errorMsg.includes('User rejected the request')) {
-            errorMsg = 'User rejected the request';
-        }
-        
-        setResponseMessage(`Approval Failed: ${errorMsg}`);
-        setResponseType('error');
-        console.error("Failed to approve builder fee");
+      let errorMsg = error.message || 'Operation failed';
+      
+      // Remove version information and clean up error message
+      if (errorMsg.includes('Version:')) {
+        errorMsg = errorMsg.split('Version:')[0].trim();
+      }
+      
+      // Remove redundant "Details: " if present
+      errorMsg = errorMsg.replace('Details: ', '');
+      
+      // Clean up duplicate messages
+      if (errorMsg.includes('User rejected') && errorMsg.includes('User rejected the request')) {
+        errorMsg = 'User rejected the request';
+      }
+      
+      setResponseMessage(`Approval Failed: ${errorMsg}`);
+      setResponseType('error');
+      console.error("Failed to approve builder fee");
     } finally {
-        setIsApproving(false);
+      setIsApproving(false);
     }
+  };
 
   return React.createElement("div", { className: "container" },
     React.createElement("div", { className: "card" },
