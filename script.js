@@ -12,37 +12,6 @@ function BuilderFeeApproval() {
   const [isApproving, setIsApproving] = useState(false);
   const [walletClient, setWalletClient] = useState(null);
 
-  // Helper function to clean error messages
-  const cleanErrorMessage = (error) => {
-    // If it's a string, clean it directly
-    if (typeof error === 'string') {
-      // Remove version information
-      return error.replace(/Version: viem@[\d.]+/g, '')
-                 .replace(/Details: /g, '')
-                 .replace(/\s+/g, ' ')
-                 .trim();
-    }
-    
-    // If it's an error object with a message
-    if (error.message) {
-      // Clean the error message
-      let cleanedMessage = error.message
-        .replace(/Version: viem@[\d.]+/g, '')
-        .replace(/Details: /g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      // If it's a user rejection, simplify the message
-      if (cleanedMessage.includes('User rejected')) {
-        return 'User rejected the request';
-      }
-
-      return cleanedMessage;
-    }
-
-    return 'Operation failed';
-  };
-
   useEffect(() => {
     connectWallet();
     checkChain();
@@ -61,7 +30,7 @@ function BuilderFeeApproval() {
         setChainId(newChain);
       });
     } catch (error) {
-      console.error('Failed to get chain:', cleanErrorMessage(error));
+      console.error('Failed to get chain:', error);
     }
   };
 
@@ -85,7 +54,7 @@ function BuilderFeeApproval() {
             }]
           });
         } catch (addError) {
-          setResponseMessage(cleanErrorMessage(addError));
+          setResponseMessage('Failed to add Arbitrum network');
           setResponseType('error');
         }
       }
@@ -116,8 +85,6 @@ function BuilderFeeApproval() {
 
     } catch (error) {
       setWalletStatus('Connection Failed');
-      setResponseMessage(cleanErrorMessage(error));
-      setResponseType('error');
     }
   };
 
@@ -144,9 +111,24 @@ function BuilderFeeApproval() {
       console.log("Builder fee approved:", response);
 
     } catch (error) {
-      setResponseMessage(`Approval Failed: ${cleanErrorMessage(error)}`);
+      let errorMsg = error.message || 'Operation failed';
+      
+      // Remove version information and clean up error message
+      if (errorMsg.includes('Version:')) {
+        errorMsg = errorMsg.split('Version:')[0].trim();
+      }
+      
+      // Remove redundant "Details: " if present
+      errorMsg = errorMsg.replace('Details: ', '');
+      
+      // Clean up duplicate messages
+      if (errorMsg.includes('User rejected') && errorMsg.includes('User rejected the request')) {
+        errorMsg = 'User rejected the request';
+      }
+      
+      setResponseMessage(`Approval Failed: ${errorMsg}`);
       setResponseType('error');
-      console.error("Failed to approve builder fee:", cleanErrorMessage(error));
+      console.error("Failed to approve builder fee");
     } finally {
       setIsApproving(false);
     }
