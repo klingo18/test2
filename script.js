@@ -12,10 +12,32 @@ function BuilderFeeApproval() {
   const [isApproving, setIsApproving] = useState(false);
   const [walletClient, setWalletClient] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
     connectWallet();
     checkChain();
-  }, []);
+
+    const handleAccountsChanged = (accounts) => {
+        if (accounts.length === 0) {
+            // MetaMask is disconnected
+            setWalletStatus('Not Connected');
+            setWalletAddress('');
+            setWalletClient(null);
+            setResponseMessage('');
+            setResponseType('');
+        }
+    };
+
+    if (window.ethereum) {
+        window.ethereum.on('chainChanged', checkChain);
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+        // Cleanup function
+        return () => {
+            window.ethereum.removeListener('chainChanged', checkChain);
+            window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        };
+    }
+}, []);
 
   const checkChain = async () => {
     if (!window.ethereum) return;
