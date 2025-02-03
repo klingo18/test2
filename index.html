@@ -3,22 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="$TRUST Builder Fee Approval by DegenApeTrader">
-    <title>$TRUST - Builder Fee Approval</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Simple Wallet Connect</title>
     <style>
         body {
-            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
             background: #1a1a1a;
+            color: white;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #status {
+            margin: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
-    <script src='https://unpkg.com/react@18/umd/react.production.min.js'></script>
-    <script src='https://unpkg.com/react-dom@18/umd/react-dom.production.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/ethers/6.8.1/ethers.umd.min.js'></script>
-    <script type="module" src="./script.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script type="module">
+        const { useState, useEffect } = React;
+
+        function WalletConnect() {
+            const [status, setStatus] = useState('Not Connected');
+            const [address, setAddress] = useState('');
+            const [chainId, setChainId] = useState(null);
+
+            useEffect(() => {
+                checkChain();
+                
+                if (window.ethereum) {
+                    window.ethereum.on('chainChanged', checkChain);
+                    window.ethereum.on('accountsChanged', accounts => {
+                        if (accounts.length === 0) {
+                            setStatus('Not Connected');
+                            setAddress('');
+                        }
+                    });
+                }
+            }, []);
+
+            const checkChain = async () => {
+                if (!window.ethereum) return;
+                
+                try {
+                    const chain = await window.ethereum.request({
+                        method: 'eth_chainId'
+                    });
+                    setChainId(chain);
+                } catch (error) {
+                    console.error('Failed to get chain:', error);
+                }
+            };
+
+            const connectWallet = async () => {
+                if (!window.ethereum) {
+                    setStatus('Please install MetaMask!');
+                    return;
+                }
+
+                try {
+                    // First disconnect by clearing site data
+                    await window.ethereum.request({
+                        method: "wallet_requestPermissions",
+                        params: [{
+                            eth_accounts: {}
+                        }]
+                    });
+
+                    const accounts = await window.ethereum.request({
+                        method: "eth_requestAccounts"
+                    });
+
+                    setStatus('Connected');
+                    setAddress(accounts[0]);
+                } catch (error) {
+                    setStatus('Connection Failed');
+                    console.error(error);
+                }
+            };
+
+            const switchToArbitrum = async () => {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xa4b1' }]
+                    });
+                } catch (error) {
+                    if (error.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0xa4b1',
+                                    chainName: 'Arbitrum One',
+                                    nativeCurrency: {
+                                        name: 'ETH',
+                                        symbol: 'ETH',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+                                    blockExplorerUrls: ['https://arbiscan.io/']
+                                }]
+                            });
+                        } catch (addError) {
+                            console.error('Failed to add Arbitrum:', addError);
+                            setStatus('Failed to add Arbitrum network');
+                        }
+                    }
+                }
+            };
+
+            return React.createElement('div', null,
+                React.createElement('div', { id: 'status' },
+                    React.createElement('p', null, `Status: ${status}`),
+                    address && React.createElement('p', null, `Address: ${address.slice(0,6)}...${address.slice(-4)}`),
+                    chainId && React.createElement('p', null, `Chain: ${chainId === '0xa4b1' ? 'Arbitrum' : 'Not Arbitrum'}`)
+                ),
+                React.createElement('button', { onClick: connectWallet }, 'Connect Wallet'),
+                React.createElement('button', { 
+                    onClick: switchToArbitrum,
+                    disabled: !address
+                }, 'Switch to Arbitrum')
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(WalletConnect));
+    </script>
 </body>
 </html>
