@@ -120,7 +120,7 @@ useEffect(() => {
         wallet: walletClient
       });
 
-      const builderAddress = "0x13e46cCd194ca86212236543d2e7376b00bafa42";
+      const builderAddress = "0xC1A2f762F67aF72FD05e79afa23F8358A4d7dbaF";
       const maxFeeRate = "0.1%";
 
       const response = await hlClient.approveBuilderFee({
