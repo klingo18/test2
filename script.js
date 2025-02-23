@@ -123,19 +123,16 @@ useEffect(() => {
       const builderAddress = "0xC1A2f762F67aF72FD05e79afa23F8358A4d7dbaF";
       const maxFeeRate = "0.1%";
 
-      console.log("Attempting to approve builder fee with address:", builderAddress);
       const response = await hlClient.approveBuilderFee({
         builder: builderAddress,
         maxFeeRate: maxFeeRate
       });
-      console.log("Raw response:", response);
 
       setResponseMessage('Builder Fee Approved Successfully! Welcome to the $TRUST fam 🦍');
       setResponseType('success');
       console.log("Builder fee approved:", response);
 
     } catch (error) {
-      console.error("Full error object:", error);
       let errorMsg = error.message || 'Operation failed';
       
       if (errorMsg.includes('Version:')) {
@@ -150,6 +147,7 @@ useEffect(() => {
       
       setResponseMessage(`Approval Failed: ${errorMsg}`);
       setResponseType('error');
+      console.error("Failed to approve builder fee");
     } finally {
       setIsApproving(false);
     }
