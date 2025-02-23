@@ -123,16 +123,35 @@ useEffect(() => {
       const builderAddress = "0xC1A2f762F67aF72FD05e79afa23F8358A4d7dbaF";
       const maxFeeRate = "0.1%";
 
+      setResponseMessage('Sending transaction...');
+      setResponseType('info');
+
       const response = await hlClient.approveBuilderFee({
         builder: builderAddress,
         maxFeeRate: maxFeeRate
       });
 
-      setResponseMessage('Builder Fee Approved Successfully! Welcome to the $TRUST fam 🦍');
-      setResponseType('success');
-      console.log("Builder fee approved:", response);
+      // Wait for transaction confirmation
+      if (response && response.hash) {
+        setResponseMessage('Transaction submitted. Waiting for confirmation...');
+        setResponseType('info');
+        
+        // Wait for transaction receipt
+        const receipt = await walletClient.waitForTransactionReceipt({ hash: response.hash });
+        
+        if (receipt.status === 'success' || receipt.status === 1) {
+          setResponseMessage('Builder Fee Approved Successfully! Welcome to the $TRUST fam 🦍');
+          setResponseType('success');
+          console.log("Builder fee approved:", response);
+        } else {
+          throw new Error('Transaction failed during execution');
+        }
+      } else {
+        throw new Error('No transaction hash received');
+      }
 
     } catch (error) {
+      console.error("Builder fee approval error:", error);
       let errorMsg = error.message || 'Operation failed';
       
       // Remove version information and clean up error message
@@ -150,7 +169,6 @@ useEffect(() => {
       
       setResponseMessage(`Approval Failed: ${errorMsg}`);
       setResponseType('error');
-      console.error("Failed to approve builder fee");
     } finally {
       setIsApproving(false);
     }
